@@ -228,6 +228,7 @@ platform_do_upgrade() {
 		CI_ROOT_UBIPART="rootfs"
 		nand_do_upgrade "$1"
 		;;
+	liteon,wpx8324|\
 	yuncore,ax830|\
 	yuncore,ax850|\
 	zyxel,scr50axe)
