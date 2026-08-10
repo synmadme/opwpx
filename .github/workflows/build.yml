@@ -53,25 +53,34 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-openwrt-qualcommax-${{ github.event.inputs.openwrt_version }}-v1-
 
-      - name: 6. Terapkan Patch WPX8324 & Update Feeds
+      - name: 6. Injeksi File Kustom & Update Feeds
         working-directory: ./openwrt
         run: |
           echo "BUILD_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
           git checkout ${{ github.event.inputs.openwrt_version }}
 
-          # Terapkan patch lengkap (DTS, Makefile, board binary data, & scripts)
-          git apply $GITHUB_WORKSPACE/patches/wpx.patch
-
-          # 2. Buat direktori tujuan untuk file kustom
+          # 1. Buat struktur folder tujuan di dalam source OpenWrt
+          mkdir -p target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/
+          mkdir -p target/linux/qualcommax/dts/
+          mkdir -p files/etc/hotplug.d/firmware/
           mkdir -p files/etc/uci-defaults/
           mkdir -p files/etc/profile.d/
 
-          # 3. Salin skrip kustomisasi
-          cp $GITHUB_WORKSPACE/custom-files/etc/uci-defaults/99-custom-settings files/etc/uci-defaults/ 2>/dev/null || true
-          cp $GITHUB_WORKSPACE/custom-files/etc/profile.d/30-userinfo.sh files/etc/profile.d/ 2>/dev/null || true
+          # 2. Salin DTS ke target kernel
+          cp $GITHUB_WORKSPACE/custom-files/ipq5018-wpx8324.dts target/linux/qualcommax/dts/ 2>/dev/null || true
+          cp $GITHUB_WORKSPACE/custom-files/ipq5018-wpx8324.dts target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ 2>/dev/null || true
+
+          # 3. Salin Hotplug Caldata
+          cp $GITHUB_WORKSPACE/custom-files/11-ath11k-caldata files/etc/hotplug.d/firmware/ 2>/dev/null || true
+
+          # 4. Salin skrip kustomisasi (UCI Defaults & Userinfo)
+          cp $GITHUB_WORKSPACE/custom-files/etc/uci-defaults/99-custom-settings files/etc/uci-defaults/ 2>/dev/null || cp $GITHUB_WORKSPACE/custom-files/99-custom-settings files/etc/uci-defaults/ 2>/dev/null || true
+          cp $GITHUB_WORKSPACE/custom-files/etc/profile.d/30-userinfo.sh files/etc/profile.d/ 2>/dev/null || cp $GITHUB_WORKSPACE/custom-files/30-userinfo.sh files/etc/profile.d/ 2>/dev/null || true
+
+          # 5. Berikan izin eksekusi pada skrip
           chmod +x files/etc/uci-defaults/* files/etc/profile.d/* 2>/dev/null || true
 
-          # Update & install feeds bawaan OpenWrt saja
+          # 6. Update & install feeds bawaan OpenWrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
@@ -112,4 +121,3 @@ jobs:
         with:
           name: WPX8324-Minimal-${{ github.event.inputs.openwrt_version }}-${{ env.BUILD_DATE }}
           path: ./openwrt/bin/targets/qualcommax/ipq50xx/*wpx8324*
-
