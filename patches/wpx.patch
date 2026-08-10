@@ -712,6 +712,7 @@ index 0000000000..f75b615d36
 +
 +			partition@80000 {
 +				label = "rootfs";
++    compatible = "ubi";
 +				reg = <0x80000 0x3e00000>;
 +			};
 +
@@ -790,8 +791,8 @@ index 0000000000..f75b615d36
 +&wifi1 {
 +	status = "okay";
 +
-+	qcom,rproc = <&q6_wcss_pd3>;
-+	qcom,userpd-subsys-name = "q6v5_wcss_userpd3";
++	qcom,rproc = <&q6_wcss_pd2>;
++	qcom,userpd-subsys-name = "q6v5_wcss_userpd2";
 +	qcom,ath11k-calibration-variant = "Lite-On-WPX8324";
 +	qcom,ath11k-fw-memory-mode = <1>;
 +	qcom,bdf-addr = <0x4d100000>;
@@ -857,7 +858,7 @@ index 92fd10a04f..4c6d9d50a0 100644
  		;;
 +        liteon,wpx8324)
 +                caldata_extract "0:ART" 0x26800 0x20000
-+                label_mac=$(mtd_get_mac_binary 0:ART 0)
++                label_mac=$(dd if=/dev/mtd16 bs=1 skip=0 count=6 2>/dev/null | hexdump -v -e '5/1 "%02x:" 1/1 "%02x"')
 +                ath11k_patch_mac $(macaddr_add $label_mac 3) 0
 +                ath11k_remove_regdomain
 +                ath11k_set_macflag
