@@ -2,7 +2,7 @@ name: 'Apply Patch to OpenWrt Branch'
 
 permissions:
   contents: write
-  workflows: write
+  actions: write
 
 on:
   workflow_dispatch:
@@ -42,9 +42,4 @@ jobs:
         working-directory: ./openwrt-src
         run: |
           git remote add my-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git push -f my-repo HEAD:refs/heads/${{ github.event.inputs.target_branch }}
-          # Tambahkan remote ke repositori Anda sendiri
-          git remote add my-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          
-          # Push hasil patch ke branch baru di repositori Anda
           git push -f my-repo HEAD:refs/heads/${{ github.event.inputs.target_branch }}
