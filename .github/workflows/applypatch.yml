@@ -1,0 +1,50 @@
+name: 'Apply Patch to OpenWrt Branch'
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      openwrt_version:
+        description: 'Versi/Branch OpenWrt Target'
+        required: true
+        type: string
+        default: 'v25.12.5'
+      target_branch:
+        description: 'Nama Branch Hasil Simpanan (di repo ini)'
+        required: true
+        type: string
+        default: 'wpx8324-v25.12.5'
+
+jobs:
+  patch_and_push:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 1. Checkout Repositori Ini (Tempat Patch Berada)
+        uses: actions/checkout@v4
+
+      - name: 2. Clone Repositori OpenWrt Resmi
+        run: |
+          git clone https://github.com/openwrt/openwrt.git ./openwrt-src
+          cd ./openwrt-src
+          git checkout ${{ github.event.inputs.openwrt_version }}
+
+      - name: 3. Terapkan File Patch WPX8324
+        working-directory: ./openwrt-src
+        run: |
+          # Konfigurasi identitas git untuk commit
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Terapkan patch menggunakan git am (agar commit history patch terbawa)
+          git am $GITHUB_WORKSPACE/patches/0001-qualcommax-ipq50xx-add-support-for-Lite-On-WPX8324.patch
+
+      - name: 4. Push Kode yang Sudah Ter-patch ke Branch Baru
+        working-directory: ./openwrt-src
+        run: |
+          # Tambahkan remote ke repositori Anda sendiri
+          git remote add my-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          # Push hasil patch ke branch baru di repositori Anda
+          git push -f my-repo HEAD:refs/heads/${{ github.event.inputs.target_branch }}
