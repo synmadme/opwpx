@@ -798,6 +798,9 @@ index 0000000000..f75b615d36
 +	qcom,bdf-addr = <0x4d100000>;
 +	qcom,m3-dump-addr = <0x4df00000>;
 +};
+&q6_wcss_pd3 {
+	status = "disabled";
+};
 diff --git a/target/linux/qualcommax/image/ipq50xx.mk b/target/linux/qualcommax/image/ipq50xx.mk
 index 60348ccea6..c55654d5dc 100644
 --- a/target/linux/qualcommax/image/ipq50xx.mk
@@ -857,7 +860,9 @@ index 92fd10a04f..4c6d9d50a0 100644
  		ath11k_set_macflag
  		;;
 +        liteon,wpx8324)
-+                caldata_extract "0:ART" 0x26800 0x20000
++                dd if=/dev/mtd16 of=/tmp/caldata.bin bs=1 skip=$((0x26800)) count=$((0x20000)) 2>/dev/null
+                 caldata_from_file /tmp/caldata.bin "$FIRMWARE" 2>/dev/null
+                 rm -f /tmp/caldata.bin
 +                label_mac=$(dd if=/dev/mtd16 bs=1 skip=0 count=6 2>/dev/null | hexdump -v -e '5/1 "%02x:" 1/1 "%02x"')
 +                ath11k_patch_mac $(macaddr_add $label_mac 3) 0
 +                ath11k_remove_regdomain
