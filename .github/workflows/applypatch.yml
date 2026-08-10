@@ -2,6 +2,7 @@ name: 'Apply Patch to OpenWrt Branch'
 
 permissions:
   contents: write
+  workflows: write
 
 on:
   workflow_dispatch:
