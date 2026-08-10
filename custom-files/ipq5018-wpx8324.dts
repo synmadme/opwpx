@@ -325,6 +325,7 @@
 
 			partition@3e80000 {
 				label = "rootfs_1";
+				compatible = "ubi";
 				reg = <0x3e80000 0x3e00000>;
 			};
 		};
