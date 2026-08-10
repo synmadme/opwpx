@@ -2,7 +2,6 @@ name: 'Apply Patch to OpenWrt Branch'
 
 permissions:
   contents: write
-  actions: write
 
 on:
   workflow_dispatch:
@@ -13,7 +12,7 @@ on:
         type: string
         default: 'v25.12.5'
       target_branch:
-        description: 'Nama Branch Hasil Simpanan (di repo ini)'
+        description: 'Nama Branch Hasil Simpanan'
         required: true
         type: string
         default: 'wpx8324-v25.12.5'
@@ -22,7 +21,7 @@ jobs:
   patch_and_push:
     runs-on: ubuntu-22.04
     steps:
-      - name: 1. Checkout Repositori Ini (Tempat Patch Berada)
+      - name: 1. Checkout Repositori Ini
         uses: actions/checkout@v4
 
       - name: 2. Clone Repositori OpenWrt Resmi
@@ -38,8 +37,14 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git am $GITHUB_WORKSPACE/patches/0001-qualcommax-ipq50xx-add-support-for-Lite-On-WPX8324.patch
 
-      - name: 4. Push Kode yang Sudah Ter-patch ke Branch Baru
+      - name: 4. Hapus File Workflows Upstream & Push Branch Baru
         working-directory: ./openwrt-src
         run: |
+          # Hapus workflow bawaan OpenWrt agar tidak ditolak oleh GitHub Security
+          rm -rf .github/workflows/
+          git add -A
+          git commit -m "Remove upstream workflows to bypass GitHub token restrictions" || true
+
+          # Push ke branch repositori Anda
           git remote add my-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push -f my-repo HEAD:refs/heads/${{ github.event.inputs.target_branch }}
