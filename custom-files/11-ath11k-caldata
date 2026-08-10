@@ -83,10 +83,11 @@ case "$FIRMWARE" in
 		ath11k_set_macflag
 		;;
         liteon,wpx8324)
-                caldata_extract "0:ART" 0x26800 0x20000
-                label_mac=$(mtd_get_mac_binary 0:ART 0)
-                ath11k_patch_mac $(macaddr_add $label_mac 3) 0
-                ath11k_remove_regdomain
+                dd if=/dev/mtd16 of=/tmp/caldata.bin bs=1 skip=$((0x26800)) count=$((0x20000)) 2>/dev/null
+                caldata_from_file /tmp/caldata.bin "$FIRMWARE" 2>/dev/null
+                rm -f /tmp/caldata.bin
+                label_mac=$(dd if=/dev/mtd16 bs=1 skip=0 count=6 2>/dev/null | hexdump -v -e '5/1 "%02x:" 1/1 "%02x"')
+                [ -n "$label_mac" ] && ath11k_patch_mac $(macaddr_add $label_mac 3) 0
                 ath11k_set_macflag
                 ;;
 	yuncore,ax830)
