@@ -23,7 +23,7 @@
 	};
 
 	chosen {
-		bootargs-append = " root=/dev/ubiblock0_1 swiotlb=1 coherent_pool=2M";
+		bootargs-append = " ubi.mtd=rootfs root=/dev/ubiblock0_1 rootfstype=squashfs quiet loglevel=4 swiotlb=1 coherent_pool=2M";
 		stdout-path = "serial0:115200n8";
 	};
 
@@ -399,8 +399,8 @@
 &wifi1 {
 	status = "okay";
 
-	qcom,rproc = <&q6_wcss_pd2>;
-	qcom,userpd-subsys-name = "q6v5_wcss_userpd2";
+	qcom,rproc = <&q6_wcss_pd3>;
+	qcom,userpd-subsys-name = "q6v5_wcss_userpd3";
 	qcom,ath11k-calibration-variant = "Lite-On-WPX8324";
 	qcom,ath11k-fw-memory-mode = <1>;
 	qcom,bdf-addr = <0x4d100000>;
@@ -408,5 +408,5 @@
 };
 
 &q6_wcss_pd3 {
-	status = "disabled";
+	status = "okay";
 };
