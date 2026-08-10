@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# 1. Pengaturan Sistem Dasar (Timezone, Hostname, & IP LAN)
+uci set system.@system[0].timezone='WIB-7'
+uci set system.@system[0].zonename='Asia/Jakarta'
+uci set system.@system[0].hostname='WPX8324'
+uci set network.lan.ipaddr='192.168.1.1'
+uci commit system
+
+# 2. Pengaturan Jaringan, Modem (WWAN), & USB Tethering
+uci -q delete network.wan6
+uci set network.globals.packet_steering='1'
+
+# Konfigurasi USB Tethering
+uci set network.tethering=interface
+uci set network.tethering.proto='dhcp'
+uci set network.tethering.device='usb0'
+
+# Konfigurasi WWAN (ModemManager)
+uci set network.wwan=interface
+uci set network.wwan.proto='modemmanager'
+uci set network.wwan.device='/sys/devices/platform/soc/soc:internal-regs/f1058000.usb/usb1/1-1'
+uci set network.wwan.apn='internet'
+uci add_list network.wwan.allowedauth='none'
+uci set network.wwan.iptype='ipv4'
+uci set network.wwan.loglevel='ERR'
+uci commit network
+
+# 3. Masukkan Tethering & WWAN ke Zona Firewall WAN
+uci -q delete firewall.@zone[1].network
+uci add_list firewall.@zone[1].network='wan'
+uci add_list firewall.@zone[1].network='tethering'
+uci add_list firewall.@zone[1].network='wwan'
+uci commit firewall
+
+# 4. Inisialisasi Otomatis Wi-Fi (2.4 GHz & 5 GHz)
+(
+    sleep 15
+    rm -f /etc/config/wireless
+    wifi config
+    
+    # Wi-Fi 2.4 GHz
+    if uci get wireless.radio0 > /dev/null 2>&1; then
+        uci set wireless.radio0.disabled='0'
+        uci set wireless.default_radio0.ssid='WPX8324-2.4G'
+        uci set wireless.default_radio0.encryption='psk2'
+        uci set wireless.default_radio0.key='12345678'
+    fi
+    
+    # Wi-Fi 5 GHz
+    if uci get wireless.radio1 > /dev/null 2>&1; then
+        uci set wireless.radio1.disabled='0'
+        uci set wireless.default_radio1.ssid='WPX8324-5G'
+        uci set wireless.default_radio1.encryption='psk2'
+        uci set wireless.default_radio1.key='12345678'
+    fi
+    
+    uci commit wireless
+    wifi reload
+) &
+
+exit 0
