@@ -34,16 +34,15 @@ jobs:
       - name: 3. Terapkan File Patch WPX8324
         working-directory: ./openwrt-src
         run: |
-          # Konfigurasi identitas git untuk commit
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Terapkan patch menggunakan git am (agar commit history patch terbawa)
           git am $GITHUB_WORKSPACE/patches/0001-qualcommax-ipq50xx-add-support-for-Lite-On-WPX8324.patch
 
       - name: 4. Push Kode yang Sudah Ter-patch ke Branch Baru
         working-directory: ./openwrt-src
         run: |
+          git remote add my-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push -f my-repo HEAD:refs/heads/${{ github.event.inputs.target_branch }}
           # Tambahkan remote ke repositori Anda sendiri
           git remote add my-repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           
