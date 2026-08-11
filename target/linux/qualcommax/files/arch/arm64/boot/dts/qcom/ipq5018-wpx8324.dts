@@ -23,7 +23,7 @@
 	};
 
 	chosen {
-		bootargs-append = " root=/dev/ubiblock0_1 swiotlb=1 coherent_pool=2M";
+		bootargs-append = " ubi.mtd=rootfs root=/dev/ubiblock0_1 rootfstype=squashfs quiet loglevel=4 swiotlb=1 coherent_pool=2M";
 		stdout-path = "serial0:115200n8";
 	};
 
@@ -319,11 +319,13 @@
 
 			partition@80000 {
 				label = "rootfs";
+				compatible = "ubi";
 				reg = <0x80000 0x3e00000>;
 			};
 
 			partition@3e80000 {
 				label = "rootfs_1";
+				compatible = "ubi";
 				reg = <0x3e80000 0x3e00000>;
 			};
 		};
@@ -403,4 +405,8 @@
 	qcom,ath11k-fw-memory-mode = <1>;
 	qcom,bdf-addr = <0x4d100000>;
 	qcom,m3-dump-addr = <0x4df00000>;
+};
+
+&q6_wcss_pd3 {
+	status = "okay";
 };
